@@ -89,4 +89,25 @@ class EventService {
             $event->delete();
         });
     }
+
+    /**
+     * Muestra las estadísticas de un evento
+     *
+     * @param integer $eventId
+     * @return array
+     */
+    public function statistics(int $eventId): array {
+        $event = Event::findOrFail($eventId);
+
+        $totalRegistered = $event->eventParticipants()->count();
+        $remaining = max(0, $event->capacity - $totalRegistered);
+
+        return [
+            'event_id'          => $event->id,
+            'event_name'        => $event->name,
+            'capacity'          => $event->capacity,
+            'registered'        => $totalRegistered,
+            'remaining_slots'   => $remaining,
+        ];
+    }
 }

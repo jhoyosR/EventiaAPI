@@ -24,3 +24,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::resource('events'      , EventAPIController::class)->except('edit');
 // Rutas para administración de participantes
 Route::resource('participants', ParticipantAPIController::class)->except('edit');
+// Ruta para agregar participantes a un evento
+Route::post('events/{eventId}/participants', [EventAPIController::class, 'registerParticipant']);
+// Ruta para ver las estadísticas de un evento
+Route::get('events/{eventId}/statistics', [EventAPIController::class, 'statistics']);

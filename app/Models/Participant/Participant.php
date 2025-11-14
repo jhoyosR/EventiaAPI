@@ -5,8 +5,9 @@ namespace App\Models\Participant;
 use App\Models\Participant\Traits\ParticipantAppends;
 use App\Models\Participant\Traits\ParticipantAttributes;
 use App\Models\Participant\Traits\ParticipantCasts;
+use App\Models\Participant\Traits\ParticipantRelations;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
 /**
@@ -24,7 +25,8 @@ class Participant extends Model {
     use Notifiable,
     ParticipantAppends,
     ParticipantAttributes,
-    ParticipantCasts;
+    ParticipantCasts,
+    ParticipantRelations;
 
     public $table     = 'participants';
 
@@ -42,5 +44,14 @@ class Participant extends Model {
         'identification',
         'birth_date',
     ];
+
+    /**
+     * Scope a query to get all relations for resource
+     *
+     * @param Builder $query Constructor de la consulta
+     */
+    public function scopeAllRelations(Builder $query): void {
+        $query->with(['eventParticipants']);
+    }
 
 }

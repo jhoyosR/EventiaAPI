@@ -5,6 +5,8 @@ namespace App\Models\Event;
 use App\Models\Event\Traits\EventAppends;
 use App\Models\Event\Traits\EventAttributes;
 use App\Models\Event\Traits\EventCasts;
+use App\Models\Event\Traits\EventRelations;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
@@ -25,6 +27,7 @@ class Event extends Model {
     EventAppends,
     EventAttributes,
     EventCasts,
+    EventRelations,
     SoftDeletes;
 
     public $table     = 'events';
@@ -44,4 +47,12 @@ class Event extends Model {
         'capacity',
     ];
 
+    /**
+     * Scope a query to get all relations for resource
+     *
+     * @param Builder $query Constructor de la consulta
+     */
+    public function scopeAllRelations(Builder $query): void {
+        $query->with(['eventParticipants']);
+    }
 }
