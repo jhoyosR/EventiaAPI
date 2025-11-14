@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\EventAPIController;
+use App\Http\Controllers\API\ParticipantAPIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Rutas para administración de eventos
-Route::resource('events', EventAPIController::class)->except('edit');
+Route::resource('events'      , EventAPIController::class)->except('edit');
+// Rutas para administración de participantes
+Route::resource('participants', ParticipantAPIController::class)->except('edit');
