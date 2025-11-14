@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Routing\Route;
 
 abstract class BaseRequest extends FormRequest {
 
@@ -12,21 +13,6 @@ abstract class BaseRequest extends FormRequest {
     public function authorize(): bool {
         return true;
     }
-
-    /**
-     * Devuelve los atributos traducidos del modelo si existen.
-     */
-    public function attributes(): array {
-        if (method_exists($this->modelClass(), 'attributes')) {
-            return $this->modelClass()::attributes();
-        }
-        return [];
-    }
-
-    /**
-     * Cada Request hijo debe devolver la clase del modelo asociado.
-     */
-    abstract protected function modelClass(): string;
 
     /**
      * Define las reglas por método de controlador.
@@ -42,4 +28,14 @@ abstract class BaseRequest extends FormRequest {
         return $this->rulesByAction()[$action] ?? [];
     }
 
+    /**
+     * Obtiene el nombre del método del controlador actual (store, update, etc.)
+     */
+    protected function getControllerMethod(): ?string {
+        $route = $this->route();
+        if ($route instanceof Route && $action = $route->getActionMethod()) {
+            return $action;
+        }
+        return null;
+    }
 }
