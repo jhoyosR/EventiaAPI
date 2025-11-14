@@ -2,12 +2,11 @@
 
 namespace App\Services;
 
-use App\DTOs\Event\CreateEventDTO;
-use App\DTOs\Event\UpdateEventDTO;
+use App\DTOs\Event\EventDTO;
 use App\Models\Event\Event;
 use App\Transformers\Event\EventResource;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 /** Servicio de eventos */
 class EventService {
@@ -20,12 +19,11 @@ class EventService {
     /**
      * Obtiene todos los registros
      *
-     * @param  Request $request
      * @return ResourceCollection
      */
-    public function getRecords(Request $request): ResourceCollection {
-        // Obtiene los registros
-        $events = Event::all();
+    public function getRecords(): ResourceCollection {
+        // Obtiene los registros 
+        $events = Event::query()->latest('id')->get();
 
         return EventResource::collection($events);
     }
@@ -37,33 +35,42 @@ class EventService {
      * @return Event|null
      */
     public function find(int $id): ?Event {
-        return Event::find($id);
+        return Event::findOrFail($id);
     }
     
     /**
      * Crea un registro
      *
-     * @param  CreateEventDTO $data
+     * @param  EventDTO $data
      * @return Event
      */
-    public function create(CreateEventDTO $data): Event {
-        $data = $data->toArray();
+    public function create(EventDTO $data): Event {
+        return DB::transaction(function () use ($data) {
+            // Crea evento
+            $event = Event::create($data->toArray());
 
-        return Event::create($data);
+            return $event;
+        });
     }
 
     /**
      * Actualiza un registro
      *
-     * @param  UpdateEventDTO $data
+     * @param  EventDTO $data
      * @return Event
      */
-    public function update(UpdateEventDTO $data): Event {
-        $data = $data->toArray();
+    public function update(int $id, EventDTO $data): Event {
+        // Inicia una transacción
+        return DB::transaction(function () use ($id, $data) {
 
-        $event = $this->find($data['id']);
-        $event->update($data);
-        return $event->fresh();
+            // Buscar o lanzar ModelNotFoundException automáticamente
+            $event = $this->find($id);
+
+            // Actualizar con los datos del DTO
+            $event->update($data->toArray());
+
+            return $event->fresh();
+        });
     }
 
     /**
@@ -72,8 +79,14 @@ class EventService {
      * @param  integer $id
      * @return boolean
      */
-    public function delete(int $id): bool {
-        $event = $this->find($id);
-        return $event->delete();
+    public function delete(int $id): void {
+        DB::transaction(function () use ($id) {
+
+            // Buscar o fallar
+            $event = $this->find($id);
+
+            // Eliminar
+            $event->delete();
+        });
     }
 }

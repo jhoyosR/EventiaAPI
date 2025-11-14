@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
-use App\DTOs\Event\CreateEventDTO;
-use App\DTOs\Event\UpdateEventDTO;
+use App\DTOs\Event\EventDTO;
 use App\Http\Requests\EventRequest as Request;
 use App\Http\Controllers\Controller;
 use App\Services\EventService;
 use App\Transformers\Event\EventResource;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class EventAPIController extends Controller {
 
@@ -26,25 +24,14 @@ class EventAPIController extends Controller {
      */
     public function index(Request $request): JsonResponse {
 
-        try {
-            // Obtener el modelo base con las relaciones
-            $events = $this->eventService->getRecords($request);
+        // Obtener todos los eventos
+        $events = $this->eventService->getRecords($request);
 
-            // Devuelve respuesta en formato JSON
-            return $this->successResponse(
-                message: 'Datos obtenidos exitosamente', 
-                result : $events->resource
-            );
-
-        } catch (\Exception $e) {
-            
-            // Devuelve respuesta en formato JSON
-            return $this->errorResponse(
-                errorMsg: 'Error al obtener los datos',
-                result  : ['error' => $e->getMessage()] ?? null,
-                code    : 500
-            );
-        }
+        // Devuelve respuesta en formato JSON
+        return $this->successResponse(
+            message: 'Datos obtenidos exitosamente', 
+            result : $events
+        );
     }
 
     /**
@@ -55,36 +42,14 @@ class EventAPIController extends Controller {
      */
     public function store(Request $request): JsonResponse {
 
-        try {
-            // Inicia transacción
-            DB::beginTransaction();
+        $event = $this->eventService->create(
+            EventDTO::fromArray($request->validated())
+        );
 
-            // Obtiene datos validados
-            $data = $request->validated();
-
-            // Crea el registro
-            $event = $this->eventService->create(CreateEventDTO::fromArray($data));
-
-            // Confirma transacción
-            DB::commit();
-
-            // Devuelve respuesta en formato JSON
-            return $this->successResponse(
-                message: 'Registro guardado exitosamente', 
-                result : $event
-            );
-
-        } catch (\Exception $e) {
-            // Rollback de la transacción
-            DB::rollBack();
-            
-            // Devuelve respuesta en formato JSON
-            return $this->errorResponse(
-                errorMsg: 'Error al guardar',
-                result  : ['error' => $e->getMessage()] ?? null,
-                code    : 500
-            );
-        }
+        return $this->successResponse(
+            message: 'Registro guardado exitosamente',
+            result  : $event
+        );
     }
 
     /**
@@ -95,34 +60,12 @@ class EventAPIController extends Controller {
      */
     public function show(int $id): JsonResponse {
 
-        try {
-            // Obtiene registro con relaciones de detalle
-            $event = $this->eventService->find($id);
+        $event = $this->eventService->find($id);
 
-            // Valida que existe
-            if (!$event) {
-                return $this->errorResponse(
-                    errorMsg: 'Registro no encontrado', 
-                    result  : null, 
-                    code    : 404
-                );
-            }
-
-            // Devuelve respuesta en formato JSON
-            return $this->successResponse(
-                message: 'Datos obtenidos exitosamente', 
-                result : EventResource::make($event)
-            );
-
-        } catch (\Exception $e) {
-            
-            // Devuelve respuesta en formato JSON
-            return $this->errorResponse(
-                errorMsg: 'Error al obtener los datos',
-                result  : ['error' => $e->getMessage()] ?? null,
-                code    : 500
-            );
-        }
+        return $this->successResponse(
+            message: 'Datos obtenidos exitosamente',
+            result  : EventResource::make($event)
+        );
     }
 
     /**
@@ -134,45 +77,15 @@ class EventAPIController extends Controller {
      */
     public function update(Request $request, int $id): JsonResponse {
 
-        try {
-            // Inicia transacción
-            DB::beginTransaction();
+        $event = $this->eventService->update(
+            id: $id,
+            data: EventDTO::fromArray($request->validated())
+        );
 
-            // Obtiene registro
-            $event = $this->eventService->find($id);
-
-            // Valida que existe
-            if (!$event) {
-                return $this->errorResponse(
-                    errorMsg: 'Registro no encontrado', 
-                    result  : null, 
-                    code    : 404
-                );
-            }
-
-            // Obtiene registro actualizado
-            $updatedEvent = $this->eventService->update(UpdateEventDTO::fromArray($event->attributesToArray())); 
-
-            // Confirma la transacción
-            DB::commit();
-
-            // Devuelve respuesta en formato JSON
-            return $this->successResponse(
-                message: 'Registro actualizado exitosamente', 
-                result : $updatedEvent->toArray()
-            );
-
-        } catch (\Exception $e) {
-            // Rollback de la transacción
-            DB::rollBack();
-            
-            // Devuelve respuesta en formato JSON
-            return $this->errorResponse(
-                errorMsg: 'Error al actualizar registro',
-                result  : ['error' => $e->getMessage()] ?? null,
-                code    : 500
-            );
-        }
+        return $this->successResponse(
+            message: 'Registro actualizado exitosamente',
+            result  : EventResource::make($event)
+        );
     }
 
     /**
@@ -183,44 +96,11 @@ class EventAPIController extends Controller {
      */
     public function destroy(int $id): JsonResponse {
 
-        try {
-            // Inicia la transacción
-            DB::beginTransaction();
+        $this->eventService->delete($id);
 
-            // Obtiene el registro
-            $event = $this->eventService->find($id);
-
-            // Valida que existe
-            if (!$event) {
-                return $this->errorResponse(
-                    errorMsg: 'No se encontró el registro', 
-                    result  : null, 
-                    code    : 404
-                );
-            }
-
-            // Elimina el registro
-            $this->eventService->delete($event->id);
-
-            // Confirma la transacción
-            DB::commit();
-
-            // Devuelve respuesta en formato JSON
-            return $this->successResponse(
-                message: 'Registro eliminado exitosamente'
-            );
-
-        } catch (\Exception $e) {
-            // Rollback de la transacción
-            DB::rollBack();
-            
-            // Devuelve respuesta en formato JSON
-            return $this->errorResponse(
-                errorMsg: 'Error al eliminar',
-                result  : ['error' => $e->getMessage()] ?? null,
-                code    : 500
-            );
-        }
+        return $this->successResponse(
+            message: 'Registro eliminado exitosamente'
+        );
     }
 
 }

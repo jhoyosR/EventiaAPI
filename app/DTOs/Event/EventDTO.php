@@ -5,9 +5,8 @@ namespace App\DTOs\Event;
 /**
  * DTO para creación del modelo
  */
-class CreateEventDTO {
+class EventDTO {
 
-    /** Constructor */
     /** Constructor */
     public function __construct(
         private readonly string $name,
@@ -22,7 +21,7 @@ class CreateEventDTO {
      *
      * @param array $data Datos del modelo
      */
-    public static function fromArray(array $data): CreateEventDTO {
+    public static function fromArray(array $data): EventDTO {
         return new self(
             name        : data_get(target: $data, key: 'name'),
             description : data_get(target: $data, key: 'description'),
