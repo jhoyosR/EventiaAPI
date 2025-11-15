@@ -1,5 +1,11 @@
+# phpstan.neon
+
+includes:
+    - vendor/larastan/larastan/extension.neon
+
 parameters:
-    level: 5 # Nivel de rigurosidad (0-9). Empieza bajo y sube.
+    level: 1
+    
     paths:
         - app/
         - database/

@@ -50,7 +50,7 @@ jobs:
 
       - name: Run Integration Tests
         run: ./vendor/bin/sail artisan test --testsuite=Feature
-        
+
       - name: Run System Tests
         run: ./vendor/bin/sail artisan test --testsuite=System
         
