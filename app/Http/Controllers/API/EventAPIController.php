@@ -6,7 +6,6 @@ use App\DTOs\Event\EventDTO;
 use App\Http\Requests\EventRequest as Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterParticipantRequest;
-use App\Services\EventRegistrationService;
 use App\Services\EventService;
 use App\Transformers\Event\EventResource;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +16,6 @@ class EventAPIController extends Controller {
     /** Constructor de la clase */
     public function __construct(
         private readonly EventService             $eventService,
-        private readonly EventRegistrationService $eventRegistrationService
     ) {}
 
     /**
@@ -121,7 +119,7 @@ class EventAPIController extends Controller {
             DB::beginTransaction();
 
             // Registra la participación
-            $result = $this->eventRegistrationService->registerParticipant(
+            $result = $this->eventService->registerParticipant(
                 $eventId,
                 $request->participant_id
             );
