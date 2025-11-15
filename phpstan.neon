@@ -1,0 +1,8 @@
+parameters:
+    level: 5 # Nivel de rigurosidad (0-9). Empieza bajo y sube.
+    paths:
+        - app/
+        - database/
+        - routes/
+    excludePaths:
+        - database/migrations/*
