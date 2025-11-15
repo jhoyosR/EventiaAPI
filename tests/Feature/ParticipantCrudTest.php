@@ -57,8 +57,8 @@ class ParticipantCrudTest extends TestCase
         $payload = [
             'name'           => 'Nombre Actualizado',
             'email'          => 'newemail@gmail.com',
-            'phone_number'   => $participant->phone_number,
-            'identification' => $participant->identification,
+            'phone_number'   => '3141214231',
+            'identification' => '100932123123',
             'birth_date'     => '1991-09-11'
         ];
 
