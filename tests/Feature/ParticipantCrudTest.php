@@ -56,10 +56,10 @@ class ParticipantCrudTest extends TestCase
 
         $payload = [
             'name'           => 'Nombre Actualizado',
-            'email'          => $participant->email,
+            'email'          => 'newemail@gmail.com',
             'phone_number'   => $participant->phone_number,
             'identification' => $participant->identification,
-            'birth_date'     => $participant->birth_date
+            'birth_date'     => '1991-09-11'
         ];
 
         $response = $this->putJson("/api/participants/{$participant->id}", $payload);
