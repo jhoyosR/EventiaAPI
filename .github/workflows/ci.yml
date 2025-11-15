@@ -10,106 +10,58 @@ jobs:
   laravel-tests:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: testing
-        options: >-
-          --health-cmd="mysqladmin ping -proot"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
-
-      redis:
-        image: redis:alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Copy .env
-        run: cp .env.example .env
-
-      - name: Update ENV for CI
-        run: |
-          echo "DB_CONNECTION=mysql" >> .env
-          echo "DB_HOST=127.0.0.1" >> .env
-          echo "DB_PORT=3306" >> .env
-          echo "DB_DATABASE=testing" >> .env
-          echo "DB_USERNAME=root" >> .env
-          echo "DB_PASSWORD=root" >> .env
-          echo "REDIS_HOST=127.0.0.1" >> .env
-          echo "APP_ENV=testing" >> .env
-
-      - name: Set Sail alias
-        run: echo 'alias sail="./vendor/bin/sail"' >> ~/.bashrc
-
       - name: Install Composer dependencies
         run: composer install --no-progress --no-interaction --prefer-dist
+        
+      - name: Configure .env for Sail CI
+        run: |
+          cp .env.example .env
+          sed -i '/DB_HOST=/c\DB_HOST=mysql' .env
+          sed -i '/REDIS_HOST=/c\REDIS_HOST=redis' .env
+          echo "APP_ENV=testing" >> .env
+          # Asegúrate de que las credenciales coincidan con las variables de entorno 
+          # usadas en tu docker-compose.yml (por ejemplo, DB_USERNAME)
 
-      - name: Start Sail Services
+      - name: Start Sail Services (App, DB, Redis)
         run: ./vendor/bin/sail up -d
         timeout-minutes: 5
-
-      - name: Wait for MySQL
+        
+      - name: Wait for services to be healthy
+        # Esperar 30 segundos, o hasta que la DB de Sail esté disponible
         run: |
-          echo "Waiting for MySQL..."
-          for i in `seq 1 30`; do
-            nc -z 127.0.0.1 3306 && echo "MySQL OK" && break
-            echo -n "."
-            sleep 2
-          done
+          echo "Waiting for Sail services..."
+          sleep 10 # Espera inicial para que Docker inicie
+          ./vendor/bin/sail artisan about > /dev/null 2>&1 || sleep 10 # Intenta comando y espera si falla
 
-      - name: Generate App Key
-        run: ./vendor/bin/sail artisan key:generate
+      - name: Generate App Key and Run Migrations
+        run: |
+          ./vendor/bin/sail artisan key:generate
+          ./vendor/bin/sail artisan migrate --force
 
-      - name: Run Migrations
-        run: ./vendor/bin/sail artisan migrate --force
-
-      #############################################
-      #       STATIC ANALYSIS
-      #############################################
       - name: PHPStan (Static Analysis)
         run: ./vendor/bin/sail vendor/bin/phpstan analyse --memory-limit=1G
 
-      #############################################
-      #       UNIT TESTS
-      #############################################
       - name: Run Unit Tests
         run: ./vendor/bin/sail artisan test --testsuite=Unit
 
-      #############################################
-      #       INTEGRATION TESTS
-      #############################################
       - name: Run Integration Tests
         run: ./vendor/bin/sail artisan test --testsuite=Feature
-
-      #############################################
-      #       SYSTEM / E2E TESTS
-      #############################################
+        
       - name: Run System Tests
         run: ./vendor/bin/sail artisan test --testsuite=System
+        
+      - name: Stop Sail Services
+        if: always()
+        run: ./vendor/bin/sail down
 
-      #############################################
-      #       STATUS PRINT
-      #############################################
       - name: ALL OK
         if: success()
-        run: echo "OK"
-
+        run: echo "Pipeline Completed Successfully!"
+        
       - name: FAILED
         if: failure()
-        run: |
-          echo "Pipeline Failed!"
-          exit 1
+        run: echo "Pipeline Failed!"
