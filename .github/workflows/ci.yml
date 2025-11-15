@@ -43,7 +43,7 @@ jobs:
           ./vendor/bin/sail artisan migrate --force
 
       - name: PHPStan (Static Analysis)
-        run: ./vendor/bin/sail vendor/bin/phpstan analyse --memory-limit=1G
+        run: docker compose exec -u www-data laravel.test vendor/bin/phpstan analyse --memory-limit=1G
 
       - name: Run Unit Tests
         run: ./vendor/bin/sail artisan test --testsuite=Unit
