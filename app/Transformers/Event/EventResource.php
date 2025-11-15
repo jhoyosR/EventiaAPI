@@ -4,9 +4,21 @@ namespace App\Transformers\Event;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\Event\Event; 
+
 
 /**
  * Transformador o mapper del modelo Event
+ * 
+ * @mixin Event
+ * @property int $id 
+ * @property string $name
+ * @property string $description
+ * @property \DateTime $datetime 
+ * @property string $location
+ * @property int $capacity
+ * @property \Illuminate\Support\Carbon $created_at
+ *
  */
 class EventResource extends JsonResource {
 

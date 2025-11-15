@@ -2,11 +2,22 @@
 
 namespace App\Transformers\Participant;
 
+use App\Models\Participant\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Transformador o mapper del modelo Participant
+ * 
+ * @mixin Participant
+ * @property int $id 
+ * @property string $name
+ * @property string $email
+ * @property string $phone_number
+ * @property string $identification
+ * @property \Illuminate\Support\Carbon $birth_date
+ * @property \Illuminate\Support\Carbon $created_at
+ *
  */
 class ParticipantResource extends JsonResource {
 
