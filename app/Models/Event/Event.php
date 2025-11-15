@@ -7,6 +7,7 @@ use App\Models\Event\Traits\EventAttributes;
 use App\Models\Event\Traits\EventCasts;
 use App\Models\Event\Traits\EventRelations;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
@@ -23,7 +24,7 @@ use Illuminate\Notifications\Notifiable;
  */
 class Event extends Model {
 
-    use Notifiable,
+    use Notifiable, HasFactory,
     EventAppends,
     EventAttributes,
     EventCasts,

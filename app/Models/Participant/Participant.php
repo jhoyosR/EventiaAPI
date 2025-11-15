@@ -7,6 +7,7 @@ use App\Models\Participant\Traits\ParticipantAttributes;
 use App\Models\Participant\Traits\ParticipantCasts;
 use App\Models\Participant\Traits\ParticipantRelations;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
@@ -22,7 +23,7 @@ use Illuminate\Notifications\Notifiable;
  */
 class Participant extends Model {
 
-    use Notifiable,
+    use Notifiable, HasFactory,
     ParticipantAppends,
     ParticipantAttributes,
     ParticipantCasts,

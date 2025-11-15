@@ -1,5 +1,6 @@
 <?php
-namespace Database\Factories;
+namespace Database\Factories\Participant;
+
 use App\Models\Participant\Participant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

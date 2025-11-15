@@ -1,5 +1,6 @@
 <?php
-namespace Database\Factories;
+namespace Database\Factories\Event;
+
 use App\Models\Event\Event;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
