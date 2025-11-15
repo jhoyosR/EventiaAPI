@@ -7,6 +7,7 @@ use App\Models\Event\Event;
 use App\Models\Participant\Participant;
 use App\Transformers\Event\EventResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /** Servicio de eventos */
@@ -142,6 +143,8 @@ class EventService {
         // Registrar la participación
         $event->eventParticipants()->attach($participantId);
 
+        Cache::forget("event_statistics_{$eventId}");
+
         return [
             'success'  => true,
             'message'  => 'Participante registrado exitosamente',
@@ -157,17 +160,26 @@ class EventService {
      * @return array
      */
     public function statistics(int $eventId): array {
-        $event = Event::findOrFail($eventId);
+        // Guarda la llave del caché
+        $cacheKey = "event_statistics_{$eventId}";
+        
+        // Cache resultados por 30 minutos (1800 segundos)
+        return Cache::remember($cacheKey, 1800, function () use ($eventId) {
+            // Obtiene el evento
+            $event = Event::findOrFail($eventId);
 
-        $totalRegistered = $event->eventParticipants()->count();
-        $remaining = max(0, $event->capacity - $totalRegistered);
+            // Cuenta los participantes registrados
+            $totalRegistered = $event->eventParticipants()->count();
+            // Cuenta los espacios disponibles
+            $remaining = max(0, $event->capacity - $totalRegistered);
 
-        return [
-            'event_id'          => $event->id,
-            'event_name'        => $event->name,
-            'capacity'          => $event->capacity,
-            'registered'        => $totalRegistered,
-            'remaining_slots'   => $remaining,
-        ];
+            return [
+                'event_id'        => $event->id,
+                'event_name'      => $event->name,
+                'capacity'        => $event->capacity,
+                'registered'      => $totalRegistered,
+                'remaining_slots' => $remaining,
+            ];
+        });
     }
 }
