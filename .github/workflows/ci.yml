@@ -23,8 +23,9 @@ jobs:
           sed -i '/DB_HOST=/c\DB_HOST=mysql' .env
           sed -i '/REDIS_HOST=/c\REDIS_HOST=redis' .env
           echo "APP_ENV=testing" >> .env
-          # Asegúrate de que las credenciales coincidan con las variables de entorno 
-          # usadas en tu docker-compose.yml (por ejemplo, DB_USERNAME)
+          echo "DB_DATABASE=testing" >> .env
+          echo "DB_USERNAME=sail" >> .env
+          echo "DB_PASSWORD=password" >> .env
 
       - name: Start Sail Services (App, DB, Redis)
         run: ./vendor/bin/sail up -d
